@@ -8,6 +8,7 @@ close all,clc,clear all;
 
 strFolder = 'D:\home\programming\vc\new\6_My home projects\13_Periodic_noise_removing_filter\';
 strFileName = strcat(strFolder,'input\papa_1.bmp');
+%strFileName = strcat(strFolder,'input\output_2.bmp');
 %strFileName = strcat(strFolder,'input\1.bmp');
 
 imgA = imread(strFileName);
@@ -35,6 +36,7 @@ title('Power spectrum density');
 % user input:
 %4-element vector of the form [xmin ymin width height]. The initial size of the rectangle is width-by-height pixels. The upper-left corner of the rectangle is at the (x,y) coordinate (xmin,ymin).
 pos = getPosition(imrect());
+%pos = getPosition(imrect());
 
 [h w] = size(imgC);
 imgD = ones([h w]);
