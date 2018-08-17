@@ -12,10 +12,13 @@ strFileName = strcat(strFolder,'input\papa_1.bmp');
 %strFileName = strcat(strFolder,'input\1.bmp');
 
 imgA = imread(strFileName);
+imgA = imresize(imgA, 0.35);
+
 [h w c] = size(imgA);
 if c == 3
     imgA = rgb2gray(imgA);
 end
+
 
 imgA = imadjust(imgA);
 figure, imshow(imgA);
@@ -33,28 +36,15 @@ imgC = fftshift(255*(imgB -min(min(imgB))) /(max(max(imgB)) - min(min(imgB))));
 figure; imshow(imgC);
 title('Power spectrum density');
 
-[h w] = size(imgC);
-% user input:
-%4-element vector of the form [xmin ymin width height]. The initial size of the rectangle is width-by-height pixels. The upper-left corner of the rectangle is at the (x,y) coordinate (xmin,ymin).
-pos = getPosition(imrect());
-%pos = getPosition(imrect());
-%imgD = ones([h w]);
+%[h w] = size(imgC);
+pos = getPosition(imrect()); % user input
 imgD = SynthesizeFilter(h, w, pos);
+pos = getPosition(imrect());
+imgD2 = SynthesizeFilter(h, w, pos);
+pos = getPosition(imrect());
+imgD3 = SynthesizeFilter(h, w, pos);
 
-
-% xmin = pos(1);
-% ymin = pos(2);
-% width = pos(3);
-% height = pos(4);
-% 
-% imgD(ymin:ymin+height, xmin:xmin+width) = 0; %imgD(row, colomn), this is why imgD(y,x) rather than (x,y)
-% 
-% ymin2 = h - pos(2) - height+3;
-% imgD(ymin2:ymin2+height, xmin:xmin+width) = 0; %imgD(row, colomn), this is why imgD(y,x) rather than (x,y)
-% 
-% xmin2 = w - pos(1) - width+3;
-% imgD(ymin:ymin+height, xmin2:xmin2+width) = 0; %imgD(row, colomn), this is why imgD(y,x) rather than (x,y)
-% imgD(ymin2:ymin2+height, xmin2:xmin2+width) = 0; %imgD(row, colomn), this is why imgD(y,x) rather than (x,y)
+imgD = imgD & imgD2 & imgD3;
 
 figure; imshow((imgC+imgD)/2);
 title('Power spectrum density + mask');
@@ -80,7 +70,8 @@ imgE = imadjust(imgE);
 figure; imshow(imgE);
 title('Final image');
 
-%figure, imshowpair(imgA, imgE,'montage');
-imwrite(imgA,strcat(strFolder,'output\input.bmp'));
-imwrite(imgE,strcat(strFolder,'output\output.bmp'));
-imwrite(imgC,strcat(strFolder,'output\Power_spectrum_density.bmp'));
+figure, imshowpair(imgA, imgE,'montage');
+imwrite(imgA,strcat(strFolder,'output\input.jpg'));
+imwrite(imgE,strcat(strFolder,'output\output.jpg'));
+imwrite(imgC,strcat(strFolder,'output\Power_spectrum_density.jpg'));
+imwrite((imgC+imgD)/2,strcat(strFolder,'output\filter.png'));
