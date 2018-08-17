@@ -7,13 +7,13 @@
 close all,clc,clear all;
 
 strFolder = 'D:\home\programming\vc\new\6_My home projects\13_Periodic_noise_removing_filter\';
-strFileName = strcat(strFolder,'input\papa_1.bmp');
+strFileName = strcat(strFolder,'input\papa_2.bmp');
 %strFileName = strcat(strFolder,'input\output_2.bmp');
 %strFileName = strcat(strFolder,'input\1.bmp');
 
 imgA = imread(strFileName);
 %imgA = imresize(imgA, 0.35);
-imgA = imresize(imgA, 0.5);
+%imgA = imresize(imgA, 0.5);
 
 [h w c] = size(imgA);
 if c == 3
