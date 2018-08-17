@@ -8,6 +8,7 @@ close all,clc,clear all;
 
 strFolder = 'D:\home\programming\vc\new\6_My home projects\13_Periodic_noise_removing_filter\';
 strFileName = strcat(strFolder,'input\papa_1.bmp');
+%strFileName = strcat(strFolder,'input\1.bmp');
 
 imgA = imread(strFileName);
 [h w c] = size(imgA);
@@ -55,7 +56,6 @@ imgD(ymin2:ymin2+height, xmin2:xmin2+width) = 0; %imgD(row, colomn), this is why
 figure; imshow((imgC+imgD)/2);
 title('Power spectrum density + mask');
 
-
 %**********************
 %*****Filtering********
 %**********************
@@ -65,7 +65,7 @@ disp('real = ')
 max(max(abs(real(imgE))))
 disp('imag = ')
 max(max(abs(imag(imgE))))
-return;
+%return;
 imgE = real(imgE);  %it needs to get real part because imgE is complex value
 imgE = uint8(255*(imgE - min(min(imgE))) /(max(max(imgE)) - min(min(imgE))));
 imgE = imadjust(imgE);
@@ -74,11 +74,10 @@ imgE = imadjust(imgE);
 %*****Output********
 %*******************
 
-
 figure; imshow(imgE);
 title('Final image');
 
-figure, imshowpair(imgA, imgE,'montage');
+%figure, imshowpair(imgA, imgE,'montage');
 imwrite(imgA,strcat(strFolder,'output\input.bmp'));
 imwrite(imgE,strcat(strFolder,'output\output.bmp'));
 imwrite(imgC,strcat(strFolder,'output\Power_spectrum_density.bmp'));
