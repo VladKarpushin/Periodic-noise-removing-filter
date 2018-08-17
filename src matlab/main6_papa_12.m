@@ -27,7 +27,6 @@ figure; imshow(imgC);
 title('Power spectrum density');
 imwrite(imgC,strcat(strFolder,'output\Power_spectrum_density.bmp'));
 
-
 [h w] = size(imgC);
 imgD = ones([h w]);
 
