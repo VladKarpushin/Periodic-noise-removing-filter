@@ -15,7 +15,8 @@ if c == 3
     imgA = rgb2gray(imgA);
 end
 
-figure; imshow(imgA);
+imgA = imadjust(imgA);
+figure, imshow(imgA);
 title('Original image');
 
 img_fft = fft2(imgA);   %spectrum 
@@ -27,8 +28,13 @@ figure; imshow(imgC);
 title('Power spectrum density');
 imwrite(imgC,strcat(strFolder,'output\Power_spectrum_density.bmp'));
 
+% user input:
+h = imrect();
+pos = getPosition(h);
+
 [h w] = size(imgC);
 imgD = ones([h w]);
+
 
 %Array of noise. Enough first eight components
 x1 = [1620 1618 1211 1212 1416 1822 1414 1007 1409 1620 1726 1420 1212 1105 1622 1824 2028 2026 1821 1618 1208 1007 805  806 1010 1215];
@@ -47,26 +53,25 @@ title('Power spectrum density + mask');
 
 imgE = ifft2(fftshift(imgD).*img_fft); %filtering
 imgE = real(imgE);  %it needs to get real part because imgE is complex value
-imgF = 255*(imgE - min(min(imgE))) /(max(max(imgE)) - min(min(imgE)));
-imgFF = uint8(imgF);    %in order to convert double to uint8
-figure; imshow(imgFF);
+imgE = uint8(255*(imgE - min(min(imgE))) /(max(max(imgE)) - min(min(imgE))));
+imgE = imadjust(imgE);
+figure; imshow(imgE);
 title('Final image');
-% imtool(imgA,[70 217]);
-% imtool(imgFF,[46 178]);clo
 
-imgAA = imadjust(imgA,[70 217]/255);
-figure; imshow(imgAA);
-%imwrite(imgAA,'output\Contrasted_original_image.bmp');
-imwrite(imgAA,strcat(strFolder,'output\Contrasted_original_image.bmp'));
-%figure; imshow(imgA,[70 217]);
-title('Contrasted original image');
+figure, imshowpair(imgA, imgE,'montage');
+imwrite(imgA,strcat(strFolder,'output\input.bmp'));
+imwrite(imgE,strcat(strFolder,'output\output.bmp'));
 
-imgFFF = imadjust(imgFF,[58 170]/255);
-figure; imshow(imgFFF);
-%imwrite(imgFFF,'output\Contrasted_Final_image.bmp');
-imwrite(imgFFF,strcat(strFolder,'output\Contrasted_Final_image.bmp'));
-%figure; imshow(imgFF,[58 170]);
-title('Contrasted Final image');
 
-figure, imshowpair(imgAA, imgFFF,'montage');
-figure, imshowpair(imgA, imgFF,'montage');
+% imgAA = imadjust(imgA,[70 217]/255);
+% figure; imshow(imgAA);
+% imwrite(imgAA,strcat(strFolder,'output\Contrasted_original_image.bmp'));
+% title('Contrasted original image');
+
+% imgFFF = imadjust(imgFF,[58 170]/255);
+% figure; imshow(imgFFF);
+% imwrite(imgFFF,strcat(strFolder,'output\Contrasted_Final_image.bmp'));
+% title('Contrasted Final image');
+
+% figure, imshowpair(imgAA, imgFFF,'montage');
+% figure, imshowpair(imgA, imgFF,'montage');
