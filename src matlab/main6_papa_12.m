@@ -12,7 +12,8 @@ strFileName = strcat(strFolder,'input\papa_1.bmp');
 %strFileName = strcat(strFolder,'input\1.bmp');
 
 imgA = imread(strFileName);
-imgA = imresize(imgA, 0.35);
+%imgA = imresize(imgA, 0.35);
+imgA = imresize(imgA, 0.5);
 
 [h w c] = size(imgA);
 if c == 3
