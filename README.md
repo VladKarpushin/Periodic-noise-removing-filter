@@ -17,9 +17,9 @@ Removes periodic noise, background and interferences in the Fourier domain. Usef
 Result
 ------
 Below you can see the real world image with periodic noise
-![Original image with periodic noise](images/input.jpg)
+![Original image with periodic noise](www/images/input.jpg)
 
 
 Below you can see the restoration result.
-![Filterred image](images/output.jpg)
+![Filterred image](www/images/output.jpg)
 
