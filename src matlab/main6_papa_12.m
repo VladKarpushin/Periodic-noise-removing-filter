@@ -69,7 +69,7 @@ imgE = imadjust(imgE);
 %*******************
 
 figure; imshow(imgE);
-title('Final image');
+title('Recovered image');
 
 figure, imshowpair(imgA, imgE,'montage');
 imwrite(imgA,strcat(strFolder,'output\input.jpg'));
