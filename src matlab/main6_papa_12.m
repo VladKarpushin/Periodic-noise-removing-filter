@@ -33,27 +33,28 @@ imgC = fftshift(255*(imgB -min(min(imgB))) /(max(max(imgB)) - min(min(imgB))));
 figure; imshow(imgC);
 title('Power spectrum density');
 
+[h w] = size(imgC);
 % user input:
 %4-element vector of the form [xmin ymin width height]. The initial size of the rectangle is width-by-height pixels. The upper-left corner of the rectangle is at the (x,y) coordinate (xmin,ymin).
 pos = getPosition(imrect());
 %pos = getPosition(imrect());
+%imgD = ones([h w]);
+imgD = SynthesizeFilter(h, w, pos);
 
-[h w] = size(imgC);
-imgD = ones([h w]);
 
-xmin = pos(1);
-ymin = pos(2);
-width = pos(3);
-height = pos(4);
-
-imgD(ymin:ymin+height, xmin:xmin+width) = 0; %imgD(row, colomn), this is why imgD(y,x) rather than (x,y)
-
-ymin2 = h - pos(2) - height+3;
-imgD(ymin2:ymin2+height, xmin:xmin+width) = 0; %imgD(row, colomn), this is why imgD(y,x) rather than (x,y)
-
-xmin2 = w - pos(1) - width+3;
-imgD(ymin:ymin+height, xmin2:xmin2+width) = 0; %imgD(row, colomn), this is why imgD(y,x) rather than (x,y)
-imgD(ymin2:ymin2+height, xmin2:xmin2+width) = 0; %imgD(row, colomn), this is why imgD(y,x) rather than (x,y)
+% xmin = pos(1);
+% ymin = pos(2);
+% width = pos(3);
+% height = pos(4);
+% 
+% imgD(ymin:ymin+height, xmin:xmin+width) = 0; %imgD(row, colomn), this is why imgD(y,x) rather than (x,y)
+% 
+% ymin2 = h - pos(2) - height+3;
+% imgD(ymin2:ymin2+height, xmin:xmin+width) = 0; %imgD(row, colomn), this is why imgD(y,x) rather than (x,y)
+% 
+% xmin2 = w - pos(1) - width+3;
+% imgD(ymin:ymin+height, xmin2:xmin2+width) = 0; %imgD(row, colomn), this is why imgD(y,x) rather than (x,y)
+% imgD(ymin2:ymin2+height, xmin2:xmin2+width) = 0; %imgD(row, colomn), this is why imgD(y,x) rather than (x,y)
 
 figure; imshow((imgC+imgD)/2);
 title('Power spectrum density + mask');
