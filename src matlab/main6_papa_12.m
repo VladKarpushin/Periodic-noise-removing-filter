@@ -23,7 +23,7 @@ end
 
 imgA = imadjust(imgA);
 figure, imshow(imgA);
-title('Original image');
+title('Original image with a periodic noise');
 
 %****************************
 %*****PSD calculation********
@@ -35,7 +35,7 @@ imgB = img_fft.*conj(img_fft);  %Power spectrum density
 imgC = fftshift(255*(imgB -min(min(imgB))) /(max(max(imgB)) - min(min(imgB))));
 
 figure; imshow(imgC);
-title('Power spectrum density');
+title('Power spectrum density of the original image');
 
 %[h w] = size(imgC);
 pos = getPosition(imrect()); % user input
@@ -48,7 +48,7 @@ imgD3 = SynthesizeFilter(h, w, pos);
 imgD = imgD & imgD2 & imgD3;
 
 figure; imshow((imgC+imgD)/2);
-title('Power spectrum density + mask');
+title('Power spectrum density + restoration filter mask');
 
 %**********************
 %*****Filtering********
