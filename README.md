@@ -23,3 +23,5 @@ Below you can see the real world image with periodic noise
 Below you can see the restoration result.
 ![Filterred image](/www/images/output.jpg)
 
+You can also find a quick video demonstration
+[YouTube](https://youtu.be/Qne51TcWwAc)
