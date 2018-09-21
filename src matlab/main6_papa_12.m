@@ -8,7 +8,8 @@
 close all,clc,clear all;
 
 strFolder = 'D:\home\programming\vc\new\6_My home projects\13_Periodic_noise_removing_filter\';
-strFileName = strcat(strFolder,'input\papa_2.bmp');
+%strFileName = strcat(strFolder,'input\papa_2.bmp');
+strFileName = strcat(strFolder,'input\input.jpg');
 %strFileName = strcat(strFolder,'input\output_2.bmp');
 %strFileName = strcat(strFolder,'input\1.bmp');
 
