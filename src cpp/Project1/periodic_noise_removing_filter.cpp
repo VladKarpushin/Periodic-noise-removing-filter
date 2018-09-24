@@ -14,6 +14,7 @@ void fftshift(const Mat& inputImg, Mat& outputImg);
 void filter2DFreq(const Mat& inputImg, Mat& outputImg, const Mat& H);
 //void calcWnrFilter(const Mat& input_h_PSF, Mat& output_G, double nsr);
 void synthesizeFilter(Size filterSize, Mat& output_H);
+void calcPSD(const Mat& inputImg, Mat& outputImg, int flag = 0);
 
 int main()
 {
@@ -36,7 +37,13 @@ int main()
     //H calculation (stop)
 
 	imgIn.convertTo(imgIn, CV_32F);
-	//Edgetaper(imgIn, imgIn, 5.0, 0.2, false);
+
+	// PSD calculation (start)
+	Mat imgPSD;
+	calcPSD(imgIn(roi), imgPSD);
+	fftshift(imgPSD, imgPSD);
+	normalize(imgPSD, imgPSD, 0, 255, NORM_MINMAX);
+	// PSD calculation (stop)
 
     // filtering (start)
     filter2DFreq(imgIn(roi), imgOut, H);
@@ -143,4 +150,39 @@ void filter2DFreq(const Mat& inputImg, Mat& outputImg, const Mat& H)
 void synthesizeFilter(Size filterSize, Mat& output_H)
 {
 	output_H = Mat(filterSize, CV_32F, Scalar(1));
+}
+
+// Function calculates PSD(Power spectrum density) by fft with two flags
+// flag = 0 means to return PSD
+// flag = 1 means to return log(PSD)
+void calcPSD(const Mat& inputImg, Mat& outputImg, int flag)
+{
+	Mat planes[2] = { Mat_<float>(inputImg.clone()), Mat::zeros(inputImg.size(), CV_32F) };
+	Mat complexI;
+	merge(planes, 2, complexI);         // Add to the expanded another plane with zeros
+	dft(complexI, complexI);            // this way the result may fit in the source matrix
+	split(complexI, planes);            // planes[0] = Re(DFT(I), planes[1] = Im(DFT(I))
+
+	//float * p;
+	//p = planes[0].ptr<float>(0);
+	//p[0] = 0;
+	//p = planes[1].ptr<float>(0);
+	//p[0] = 0;
+	planes[0].at<float>(0) = 0;
+	planes[1].at<float>(0) = 0;
+
+	// compute the PSD and switch to logarithmic scale
+	// => log(1 + sqrt(Re(DFT(I))^2 + Im(DFT(I))^2))
+	Mat imgPSD;
+	magnitude(planes[0], planes[1], imgPSD);		//imgPSD = sqrt(Power spectrum density)
+	pow(imgPSD, 2, imgPSD);							//it needs ^2 in order to get PSD
+	outputImg = imgPSD;
+
+	if (flag)
+	{
+		Mat imglogPSD;
+		imglogPSD = imgPSD + Scalar::all(1);		//switch to logarithmic scale
+		log(imglogPSD, imglogPSD);					//imglogPSD = log(PSD)
+		outputImg = imglogPSD;
+	}
 }
