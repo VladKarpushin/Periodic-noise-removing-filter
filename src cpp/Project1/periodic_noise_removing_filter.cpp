@@ -9,17 +9,14 @@
 using namespace cv;
 using namespace std;
 
-//void calcPSF(Mat& outputImg, Size filterSize, int len, double theta);
 void fftshift(const Mat& inputImg, Mat& outputImg);
 void filter2DFreq(const Mat& inputImg, Mat& outputImg, const Mat& H);
-//void calcWnrFilter(const Mat& input_h_PSF, Mat& output_G, double nsr);
-void synthesizeFilter(Size filterSize, Mat& output_H, Rect roi);
+void synthesizeFilter(Mat& inputOutput_H, Rect roi);
 void calcPSD(const Mat& inputImg, Mat& outputImg, int flag = 0);
 
 int main()
 {
 	Mat imgIn = imread("D:\\home\\programming\\vc\\new\\6_My home projects\\13_Periodic_noise_removing_filter\\input\\input.jpg", IMREAD_GRAYSCALE);
-	//Mat imgIn = imread("D:\\home\\programming\\vc\\new\\6_My home projects\\13_Periodic_noise_removing_filter\\input\\filter.png", IMREAD_GRAYSCALE);
     if (imgIn.empty()) //check whether the image is loaded or not
     {
         cout << "ERROR : Image cannot be loaded..!!" << endl;
@@ -31,57 +28,51 @@ int main()
 //! [main]
     // it needs to process even image only
     Rect roi = Rect(0, 0, imgIn.cols & -2, imgIn.rows & -2);
+	imgIn = imgIn(roi);
 
 	// PSD calculation (start)
 	Mat imgPSD;
-	calcPSD(imgIn(roi), imgPSD);
+	calcPSD(imgIn, imgPSD, true);
 	fftshift(imgPSD, imgPSD);
 	normalize(imgPSD, imgPSD, 0, 255, NORM_MINMAX);
 	// PSD calculation (stop)
 
 	//H calculation (start)
-	Mat H;
-	Rect roiA(684, 406, 50, 50);
-	Rect roiB(829, 373, 50, 50);
-	Rect roiC(960, 304, 50, 50);
-
-	synthesizeFilter(roi.size(), H, roiA);
+	Mat H = Mat(roi.size(), CV_32F, Scalar(1));
+	const int w = 40;
+	Rect roiA(684, 447, w, w);
+	Rect roiB(829, 373, w, w);
+	Rect roiC(960, 304, w, w);
+	synthesizeFilter(H, roiA);
+	synthesizeFilter(H, roiB);
+	synthesizeFilter(H, roiC);
+	Mat imgHPlusPSD = imgPSD + H*255;
+	normalize(imgHPlusPSD, imgHPlusPSD, 0, 255, NORM_MINMAX);
+	imgHPlusPSD.convertTo(imgHPlusPSD, CV_8U);
 	//H calculation (stop)
 	
 	// filtering (start)
 	Mat imgOut;
-	filter2DFreq(imgIn(roi), imgOut, H);
+	fftshift(H, H);
+	filter2DFreq(imgIn, imgOut, H);
     // filtering (stop)
 //! [main]
 
     imgOut.convertTo(imgOut, CV_8U);
     normalize(imgOut, imgOut, 0, 255, NORM_MINMAX);
+	imwrite("result.jpg", imgOut);
 
-	//char  buf[100];
-	//sprintf_s(buf, "_LEN = %d_THETA = %4.1f_snr = %d", LEN, THETA, snr);
-	//string strOutFileName = strInFileName;
-	//strOutFileName.insert(strOutFileName.size() - 4, buf);
-	//imwrite(strOutFileName, imgOut);
+	imgIn.convertTo(imgIn, CV_8U);
+	normalize(imgIn, imgIn, 0, 255, NORM_MINMAX);
+	imwrite("input.jpg", imgIn);
 
-	//string strOutFileNameTmp = strInFileName;
-	//strOutFileNameTmp.insert(strOutFileNameTmp.size() - 4, "_after_edgetaper");
-	//imwrite(strOutFileNameTmp, imgIn);
-    return 0;
+	imgPSD.convertTo(imgPSD, CV_8U);
+	normalize(imgPSD, imgPSD, 0, 255, NORM_MINMAX);
+	imwrite("PSD.jpg", imgPSD);
+
+	imwrite("imgHPlusPSD.jpg", imgHPlusPSD);
+	return 0;
 }
-
-////! [calcPSF]
-//void calcPSF(Mat& outputImg, Size filterSize, int len, double theta)
-//{
-//    Mat h(filterSize, CV_32F, Scalar(0));
-//    Point point(filterSize.width / 2, filterSize.height / 2);
-//    //circle(h, point, R, 255, -1, 8);
-//	//ellipse(h, point, Size(0,cvRound(float(len)/2.0)), 90-theta, 0, 360, 255, -1);
-//	ellipse(h, point, Size(0, cvRound(float(len) / 2.0)), 90.0 - theta, 0, 360, Scalar(255), FILLED);
-//	
-//    Scalar summa = sum(h);
-//    outputImg = h / summa[0];
-//}
-////! [calcPSF]
 
 //! [fftshift]
 void fftshift(const Mat& inputImg, Mat& outputImg)
@@ -134,42 +125,18 @@ void filter2DFreq(const Mat& inputImg, Mat& outputImg, const Mat& H)
 }
 //! [filter2DFreq]
 
-////! [calcWnrFilter]
-//void calcWnrFilter(const Mat& input_h_PSF, Mat& output_G, double nsr)
-//{
-//    Mat h_PSF_shifted;
-//    fftshift(input_h_PSF, h_PSF_shifted);
-//    Mat planes[2] = { Mat_<float>(h_PSF_shifted.clone()), Mat::zeros(h_PSF_shifted.size(), CV_32F) };
-//    Mat complexI;
-//    merge(planes, 2, complexI);
-//    dft(complexI, complexI);
-//    split(complexI, planes);
-//    Mat denom;
-//    pow(abs(planes[0]), 2, denom);
-//    denom += nsr;
-//    divide(planes[0], denom, output_G);
-//}
-////! [calcWnrFilter]
-
-void synthesizeFilter(Size filterSize, Mat& output_H, Rect roi)
+void synthesizeFilter(Mat& inputOutput_H, Rect roi)
 {
-	output_H = Mat(filterSize, CV_32F, Scalar(1));
-	Rect roiA1 = roi;
-
-	Rect roiA2 = roiA1;
-	roiA2.y = filterSize.height - roiA1.y - roiA1.height + 1;
-
-	Rect roiA3 = roiA1;
-	roiA3.x = filterSize.width - roiA1.x - roiA1.width + 1;
-
-	Rect roiA4 = roiA1;
+	Rect roiA2 = roi, roiA3 = roi, roiA4 = roi;
+	roiA2.y = inputOutput_H.rows - roi.y - roi.height + 1;
+	roiA3.x = inputOutput_H.cols - roi.x - roi.width + 1;
 	roiA4.x = roiA3.x;
 	roiA4.y = roiA2.y;
 	
-	output_H(roiA1) = 0;
-	output_H(roiA2) = 0;
-	output_H(roiA3) = 0;
-	output_H(roiA4) = 0;
+	inputOutput_H(roi) = 0;
+	inputOutput_H(roiA2) = 0;
+	inputOutput_H(roiA3) = 0;
+	inputOutput_H(roiA4) = 0;
 }
 
 // Function calculates PSD(Power spectrum density) by fft with two flags
@@ -183,11 +150,6 @@ void calcPSD(const Mat& inputImg, Mat& outputImg, int flag)
 	dft(complexI, complexI);
 	split(complexI, planes);            // planes[0] = Re(DFT(I)), planes[1] = Im(DFT(I))
 
-	//float * p;
-	//p = planes[0].ptr<float>(0);
-	//p[0] = 0;
-	//p = planes[1].ptr<float>(0);
-	//p[0] = 0;
 	planes[0].at<float>(0) = 0;
 	planes[1].at<float>(0) = 0;
 
