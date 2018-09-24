@@ -3,7 +3,6 @@
 * @author Karpushin Vladislav, karpushin@ngs.ru, https://github.com/VladKarpushin
 */
 #include <iostream>
-#include "opencv2/imgproc.hpp"
 #include "opencv2/imgcodecs.hpp"
 
 using namespace cv;
@@ -32,7 +31,7 @@ int main()
 
 	// PSD calculation (start)
 	Mat imgPSD;
-	calcPSD(imgIn, imgPSD, true);
+	calcPSD(imgIn, imgPSD);
 	fftshift(imgPSD, imgPSD);
 	normalize(imgPSD, imgPSD, 0, 255, NORM_MINMAX);
 	// PSD calculation (stop)
