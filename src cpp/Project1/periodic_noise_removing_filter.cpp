@@ -2,17 +2,18 @@
 * @brief You will learn how to remove periodic noise in the Fourier domain
 * @author Karpushin Vladislav, karpushin@ngs.ru, https://github.com/VladKarpushin
 */
+#include <iostream>
 #include "opencv2/imgproc.hpp"
 #include "opencv2/imgcodecs.hpp"
-#include <iostream>
 
 using namespace cv;
 using namespace std;
 
-void calcPSF(Mat& outputImg, Size filterSize, int len, double theta);
+//void calcPSF(Mat& outputImg, Size filterSize, int len, double theta);
 void fftshift(const Mat& inputImg, Mat& outputImg);
 void filter2DFreq(const Mat& inputImg, Mat& outputImg, const Mat& H);
-void calcWnrFilter(const Mat& input_h_PSF, Mat& output_G, double nsr);
+//void calcWnrFilter(const Mat& input_h_PSF, Mat& output_G, double nsr);
+void synthesizeFilter(Size filterSize, Mat& output_H);
 
 int main()
 {
@@ -29,17 +30,16 @@ int main()
     // it needs to process even image only
     Rect roi = Rect(0, 0, imgIn.cols & -2, imgIn.rows & -2);
 
-    //Hw calculation (start)
-    Mat Hw, h;
-    //calcPSF(h, roi.size(), LEN, THETA);
-    //calcWnrFilter(h, Hw, 1.0 / double(snr));
-    //Hw calculation (stop)
+    //H calculation (start)
+    Mat H;
+	synthesizeFilter(roi.size(), H);
+    //H calculation (stop)
 
 	imgIn.convertTo(imgIn, CV_32F);
 	//Edgetaper(imgIn, imgIn, 5.0, 0.2, false);
 
     // filtering (start)
-    filter2DFreq(imgIn(roi), imgOut, Hw);
+    filter2DFreq(imgIn(roi), imgOut, H);
     // filtering (stop)
 //! [main]
 
@@ -58,19 +58,19 @@ int main()
     return 0;
 }
 
-//! [calcPSF]
-void calcPSF(Mat& outputImg, Size filterSize, int len, double theta)
-{
-    Mat h(filterSize, CV_32F, Scalar(0));
-    Point point(filterSize.width / 2, filterSize.height / 2);
-    //circle(h, point, R, 255, -1, 8);
-	//ellipse(h, point, Size(0,cvRound(float(len)/2.0)), 90-theta, 0, 360, 255, -1);
-	ellipse(h, point, Size(0, cvRound(float(len) / 2.0)), 90.0 - theta, 0, 360, Scalar(255), FILLED);
-	
-    Scalar summa = sum(h);
-    outputImg = h / summa[0];
-}
-//! [calcPSF]
+////! [calcPSF]
+//void calcPSF(Mat& outputImg, Size filterSize, int len, double theta)
+//{
+//    Mat h(filterSize, CV_32F, Scalar(0));
+//    Point point(filterSize.width / 2, filterSize.height / 2);
+//    //circle(h, point, R, 255, -1, 8);
+//	//ellipse(h, point, Size(0,cvRound(float(len)/2.0)), 90-theta, 0, 360, 255, -1);
+//	ellipse(h, point, Size(0, cvRound(float(len) / 2.0)), 90.0 - theta, 0, 360, Scalar(255), FILLED);
+//	
+//    Scalar summa = sum(h);
+//    outputImg = h / summa[0];
+//}
+////! [calcPSF]
 
 //! [fftshift]
 void fftshift(const Mat& inputImg, Mat& outputImg)
@@ -123,19 +123,24 @@ void filter2DFreq(const Mat& inputImg, Mat& outputImg, const Mat& H)
 }
 //! [filter2DFreq]
 
-//! [calcWnrFilter]
-void calcWnrFilter(const Mat& input_h_PSF, Mat& output_G, double nsr)
+////! [calcWnrFilter]
+//void calcWnrFilter(const Mat& input_h_PSF, Mat& output_G, double nsr)
+//{
+//    Mat h_PSF_shifted;
+//    fftshift(input_h_PSF, h_PSF_shifted);
+//    Mat planes[2] = { Mat_<float>(h_PSF_shifted.clone()), Mat::zeros(h_PSF_shifted.size(), CV_32F) };
+//    Mat complexI;
+//    merge(planes, 2, complexI);
+//    dft(complexI, complexI);
+//    split(complexI, planes);
+//    Mat denom;
+//    pow(abs(planes[0]), 2, denom);
+//    denom += nsr;
+//    divide(planes[0], denom, output_G);
+//}
+////! [calcWnrFilter]
+
+void synthesizeFilter(Size filterSize, Mat& output_H)
 {
-    Mat h_PSF_shifted;
-    fftshift(input_h_PSF, h_PSF_shifted);
-    Mat planes[2] = { Mat_<float>(h_PSF_shifted.clone()), Mat::zeros(h_PSF_shifted.size(), CV_32F) };
-    Mat complexI;
-    merge(planes, 2, complexI);
-    dft(complexI, complexI);
-    split(complexI, planes);
-    Mat denom;
-    pow(abs(planes[0]), 2, denom);
-    denom += nsr;
-    divide(planes[0], denom, output_G);
+	output_H = Mat(filterSize, CV_32F, Scalar(1));
 }
-//! [calcWnrFilter]
