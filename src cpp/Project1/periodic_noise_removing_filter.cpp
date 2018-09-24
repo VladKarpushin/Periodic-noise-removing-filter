@@ -13,30 +13,24 @@ using namespace std;
 void fftshift(const Mat& inputImg, Mat& outputImg);
 void filter2DFreq(const Mat& inputImg, Mat& outputImg, const Mat& H);
 //void calcWnrFilter(const Mat& input_h_PSF, Mat& output_G, double nsr);
-void synthesizeFilter(Size filterSize, Mat& output_H);
+void synthesizeFilter(Size filterSize, Mat& output_H, Rect roi);
 void calcPSD(const Mat& inputImg, Mat& outputImg, int flag = 0);
 
 int main()
 {
 	Mat imgIn = imread("D:\\home\\programming\\vc\\new\\6_My home projects\\13_Periodic_noise_removing_filter\\input\\input.jpg", IMREAD_GRAYSCALE);
+	//Mat imgIn = imread("D:\\home\\programming\\vc\\new\\6_My home projects\\13_Periodic_noise_removing_filter\\input\\filter.png", IMREAD_GRAYSCALE);
     if (imgIn.empty()) //check whether the image is loaded or not
     {
         cout << "ERROR : Image cannot be loaded..!!" << endl;
         return -1;
     }
 
-    Mat imgOut;
+	imgIn.convertTo(imgIn, CV_32F);
 
 //! [main]
     // it needs to process even image only
     Rect roi = Rect(0, 0, imgIn.cols & -2, imgIn.rows & -2);
-
-    //H calculation (start)
-    Mat H;
-	synthesizeFilter(roi.size(), H);
-    //H calculation (stop)
-
-	imgIn.convertTo(imgIn, CV_32F);
 
 	// PSD calculation (start)
 	Mat imgPSD;
@@ -45,8 +39,18 @@ int main()
 	normalize(imgPSD, imgPSD, 0, 255, NORM_MINMAX);
 	// PSD calculation (stop)
 
-    // filtering (start)
-    filter2DFreq(imgIn(roi), imgOut, H);
+	//H calculation (start)
+	Mat H;
+	Rect roiA(684, 406, 50, 50);
+	Rect roiB(829, 373, 50, 50);
+	Rect roiC(960, 304, 50, 50);
+
+	synthesizeFilter(roi.size(), H, roiA);
+	//H calculation (stop)
+	
+	// filtering (start)
+	Mat imgOut;
+	filter2DFreq(imgIn(roi), imgOut, H);
     // filtering (stop)
 //! [main]
 
@@ -147,9 +151,25 @@ void filter2DFreq(const Mat& inputImg, Mat& outputImg, const Mat& H)
 //}
 ////! [calcWnrFilter]
 
-void synthesizeFilter(Size filterSize, Mat& output_H)
+void synthesizeFilter(Size filterSize, Mat& output_H, Rect roi)
 {
 	output_H = Mat(filterSize, CV_32F, Scalar(1));
+	Rect roiA1 = roi;
+
+	Rect roiA2 = roiA1;
+	roiA2.y = filterSize.height - roiA1.y - roiA1.height + 1;
+
+	Rect roiA3 = roiA1;
+	roiA3.x = filterSize.width - roiA1.x - roiA1.width + 1;
+
+	Rect roiA4 = roiA1;
+	roiA4.x = roiA3.x;
+	roiA4.y = roiA2.y;
+	
+	output_H(roiA1) = 0;
+	output_H(roiA2) = 0;
+	output_H(roiA3) = 0;
+	output_H(roiA4) = 0;
 }
 
 // Function calculates PSD(Power spectrum density) by fft with two flags
@@ -159,9 +179,9 @@ void calcPSD(const Mat& inputImg, Mat& outputImg, int flag)
 {
 	Mat planes[2] = { Mat_<float>(inputImg.clone()), Mat::zeros(inputImg.size(), CV_32F) };
 	Mat complexI;
-	merge(planes, 2, complexI);         // Add to the expanded another plane with zeros
-	dft(complexI, complexI);            // this way the result may fit in the source matrix
-	split(complexI, planes);            // planes[0] = Re(DFT(I), planes[1] = Im(DFT(I))
+	merge(planes, 2, complexI);
+	dft(complexI, complexI);
+	split(complexI, planes);            // planes[0] = Re(DFT(I)), planes[1] = Im(DFT(I))
 
 	//float * p;
 	//p = planes[0].ptr<float>(0);
