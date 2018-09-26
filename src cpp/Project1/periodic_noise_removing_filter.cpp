@@ -31,7 +31,7 @@ int main()
 
 	// PSD calculation (start)
 	Mat imgPSD;
-	calcPSD(imgIn, imgPSD);
+	calcPSD(imgIn, imgPSD, true);
 	fftshift(imgPSD, imgPSD);
 	normalize(imgPSD, imgPSD, 0, 255, NORM_MINMAX);
 	// PSD calculation (stop)
@@ -39,12 +39,15 @@ int main()
 	//H calculation (start)
 	Mat H = Mat(roi.size(), CV_32F, Scalar(1));
 	const int w = 40;
-	Rect roiA(684, 447, w, w);
-	Rect roiB(829, 373, w, w);
-	Rect roiC(960, 304, w, w);
-	synthesizeFilter(H, roiA);
-	synthesizeFilter(H, roiB);
-	synthesizeFilter(H, roiC);
+	//Rect roiA((684, 447, w, w);
+	//Rect roiB(829, 373, w, w);
+	//Rect roiC(960, 304, w, w);
+	//synthesizeFilter(H, roiA);
+	//synthesizeFilter(H, roiB);
+	//synthesizeFilter(H, roiC);
+	synthesizeFilter(H, Rect(684, 447, w, w));
+	synthesizeFilter(H, Rect(829, 373, w, w));
+	synthesizeFilter(H, Rect(960, 304, w, w));
 	Mat imgHPlusPSD = imgPSD + H*255;
 	normalize(imgHPlusPSD, imgHPlusPSD, 0, 255, NORM_MINMAX);
 	imgHPlusPSD.convertTo(imgHPlusPSD, CV_8U);
