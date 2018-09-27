@@ -3,14 +3,16 @@
 * @author Karpushin Vladislav, karpushin@ngs.ru, https://github.com/VladKarpushin
 */
 #include <iostream>
-#include "opencv2/imgcodecs.hpp"
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
 
 using namespace cv;
 using namespace std;
 
 void fftshift(const Mat& inputImg, Mat& outputImg);
 void filter2DFreq(const Mat& inputImg, Mat& outputImg, const Mat& H);
-void synthesizeFilter(Mat& inputOutput_H, Rect roi);
+void synthesizeFilterH(Mat& inputOutput_H, Rect roi);
+void synthesizeFilterH(Mat& inputOutput_H, Point center, int radius);
 void calcPSD(const Mat& inputImg, Mat& outputImg, int flag = 0);
 
 int main()
@@ -38,17 +40,20 @@ int main()
 
 	//H calculation (start)
 	Mat H = Mat(roi.size(), CV_32F, Scalar(1));
-	const int w = 40;
-	//Rect roiA((684, 447, w, w);
-	//Rect roiB(829, 373, w, w);
-	//Rect roiC(960, 304, w, w);
-	//synthesizeFilter(H, roiA);
-	//synthesizeFilter(H, roiB);
-	//synthesizeFilter(H, roiC);
-	synthesizeFilter(H, Rect(684, 447, w, w));
-	synthesizeFilter(H, Rect(829, 373, w, w));
-	synthesizeFilter(H, Rect(960, 304, w, w));
-	Mat imgHPlusPSD = imgPSD + H*255;
+	//const int w = 40;
+	//synthesizeFilterH(H, Rect(684, 447, w, w));
+	//synthesizeFilterH(H, Rect(829, 373, w, w));
+	//synthesizeFilterH(H, Rect(960, 304, w, w));
+	const int r = 21;
+	synthesizeFilterH(H, Point(705, 458), r);
+	synthesizeFilterH(H, Point(850, 391), r);
+	synthesizeFilterH(H, Point(993, 325), r);
+	//synthesizeFilter(H, Point(775, 457), r);
+	//synthesizeFilter(H, Point(707, 325), r);
+	//synthesizeFilter(H, Point(851, 258), r);
+	//synthesizeFilter(H, Point(564, 391), r);
+
+	Mat imgHPlusPSD = imgPSD + H*50;
 	normalize(imgHPlusPSD, imgHPlusPSD, 0, 255, NORM_MINMAX);
 	imgHPlusPSD.convertTo(imgHPlusPSD, CV_8U);
 	//H calculation (stop)
@@ -68,8 +73,8 @@ int main()
 	normalize(imgIn, imgIn, 0, 255, NORM_MINMAX);
 	imwrite("input.jpg", imgIn);
 
-	imgPSD.convertTo(imgPSD, CV_8U);
-	normalize(imgPSD, imgPSD, 0, 255, NORM_MINMAX);
+	//imgPSD.convertTo(imgPSD, CV_8U);
+	//normalize(imgPSD, imgPSD, 0, 255, NORM_MINMAX);
 	imwrite("PSD.jpg", imgPSD);
 
 	imwrite("imgHPlusPSD.jpg", imgHPlusPSD);
@@ -127,7 +132,7 @@ void filter2DFreq(const Mat& inputImg, Mat& outputImg, const Mat& H)
 }
 //! [filter2DFreq]
 
-void synthesizeFilter(Mat& inputOutput_H, Rect roi)
+void synthesizeFilterH(Mat& inputOutput_H, Rect roi)
 {
 	Rect roiA2 = roi, roiA3 = roi, roiA4 = roi;
 	roiA2.y = inputOutput_H.rows - roi.y - roi.height + 1;
@@ -139,6 +144,18 @@ void synthesizeFilter(Mat& inputOutput_H, Rect roi)
 	inputOutput_H(roiA2) = 0;
 	inputOutput_H(roiA3) = 0;
 	inputOutput_H(roiA4) = 0;
+}
+
+void synthesizeFilterH(Mat& inputOutput_H, Point center, int radius)
+{
+	Point c2 = center, c3 = center, c4 = center;
+	c2.y = inputOutput_H.rows - center.y;
+	c3.x = inputOutput_H.cols - center.x;
+	c4 = Point(c3.x,c2.y);
+	circle(inputOutput_H, center, radius, 0, -1, 8);
+	circle(inputOutput_H, c2, radius, 0, -1, 8);
+	circle(inputOutput_H, c3, radius, 0, -1, 8);
+	circle(inputOutput_H, c4, radius, 0, -1, 8);
 }
 
 // Function calculates PSD(Power spectrum density) by fft with two flags
