@@ -33,26 +33,17 @@ int main()
 
 	// PSD calculation (start)
 	Mat imgPSD;
-	calcPSD(imgIn, imgPSD, true);
+	calcPSD(imgIn, imgPSD);
 	fftshift(imgPSD, imgPSD);
 	normalize(imgPSD, imgPSD, 0, 255, NORM_MINMAX);
 	// PSD calculation (stop)
 
 	//H calculation (start)
 	Mat H = Mat(roi.size(), CV_32F, Scalar(1));
-	//const int w = 40;
-	//synthesizeFilterH(H, Rect(684, 447, w, w));
-	//synthesizeFilterH(H, Rect(829, 373, w, w));
-	//synthesizeFilterH(H, Rect(960, 304, w, w));
 	const int r = 21;
 	synthesizeFilterH(H, Point(705, 458), r);
 	synthesizeFilterH(H, Point(850, 391), r);
 	synthesizeFilterH(H, Point(993, 325), r);
-	//synthesizeFilter(H, Point(775, 457), r);
-	//synthesizeFilter(H, Point(707, 325), r);
-	//synthesizeFilter(H, Point(851, 258), r);
-	//synthesizeFilter(H, Point(564, 391), r);
-
 	Mat imgHPlusPSD = imgPSD + H*50;
 	normalize(imgHPlusPSD, imgHPlusPSD, 0, 255, NORM_MINMAX);
 	imgHPlusPSD.convertTo(imgHPlusPSD, CV_8U);
@@ -76,8 +67,11 @@ int main()
 	//imgPSD.convertTo(imgPSD, CV_8U);
 	//normalize(imgPSD, imgPSD, 0, 255, NORM_MINMAX);
 	imwrite("PSD.jpg", imgPSD);
-
 	imwrite("imgHPlusPSD.jpg", imgHPlusPSD);
+
+	fftshift(H, H);
+	normalize(H, H, 0, 255, NORM_MINMAX);
+	imwrite("filter.jpg", H);
 	return 0;
 }
 
@@ -132,6 +126,7 @@ void filter2DFreq(const Mat& inputImg, Mat& outputImg, const Mat& H)
 }
 //! [filter2DFreq]
 
+//! [synthesizeFilterH]
 void synthesizeFilterH(Mat& inputOutput_H, Rect roi)
 {
 	Rect roiA2 = roi, roiA3 = roi, roiA4 = roi;
@@ -145,7 +140,9 @@ void synthesizeFilterH(Mat& inputOutput_H, Rect roi)
 	inputOutput_H(roiA3) = 0;
 	inputOutput_H(roiA4) = 0;
 }
+//! [synthesizeFilterH]
 
+//! [synthesizeFilterH]
 void synthesizeFilterH(Mat& inputOutput_H, Point center, int radius)
 {
 	Point c2 = center, c3 = center, c4 = center;
@@ -157,10 +154,12 @@ void synthesizeFilterH(Mat& inputOutput_H, Point center, int radius)
 	circle(inputOutput_H, c3, radius, 0, -1, 8);
 	circle(inputOutput_H, c4, radius, 0, -1, 8);
 }
+//! [synthesizeFilterH]
 
 // Function calculates PSD(Power spectrum density) by fft with two flags
 // flag = 0 means to return PSD
 // flag = 1 means to return log(PSD)
+//! [calcPSD]
 void calcPSD(const Mat& inputImg, Mat& outputImg, int flag)
 {
 	Mat planes[2] = { Mat_<float>(inputImg.clone()), Mat::zeros(inputImg.size(), CV_32F) };
@@ -187,3 +186,4 @@ void calcPSD(const Mat& inputImg, Mat& outputImg, int flag)
 		outputImg = imglogPSD;
 	}
 }
+//! [calcPSD]
