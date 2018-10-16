@@ -16,50 +16,50 @@ void calcPSD(const Mat& inputImg, Mat& outputImg, int flag = 0);
 
 int main()
 {
-	Mat imgIn = imread("D:\\home\\programming\\vc\\new\\6_My home projects\\13_Periodic_noise_removing_filter\\input\\input.jpg", IMREAD_GRAYSCALE);
+    Mat imgIn = imread("D:\\home\\programming\\vc\\new\\6_My home projects\\13_Periodic_noise_removing_filter\\input\\input.jpg", IMREAD_GRAYSCALE);
     if (imgIn.empty()) //check whether the image is loaded or not
     {
         cout << "ERROR : Image cannot be loaded..!!" << endl;
         return -1;
     }
 
-	imgIn.convertTo(imgIn, CV_32F);
+    imgIn.convertTo(imgIn, CV_32F);
 
 //! [main]
     // it needs to process even image only
     Rect roi = Rect(0, 0, imgIn.cols & -2, imgIn.rows & -2);
-	imgIn = imgIn(roi);
+    imgIn = imgIn(roi);
 
-	// PSD calculation (start)
-	Mat imgPSD;
-	calcPSD(imgIn, imgPSD);
-	fftshift(imgPSD, imgPSD);
-	normalize(imgPSD, imgPSD, 0, 255, NORM_MINMAX);
-	// PSD calculation (stop)
+    // PSD calculation (start)
+    Mat imgPSD;
+    calcPSD(imgIn, imgPSD);
+    fftshift(imgPSD, imgPSD);
+    normalize(imgPSD, imgPSD, 0, 255, NORM_MINMAX);
+    // PSD calculation (stop)
 
-	//H calculation (start)
-	Mat H = Mat(roi.size(), CV_32F, Scalar(1));
-	const int r = 21;
-	synthesizeFilterH(H, Point(705, 458), r);
-	synthesizeFilterH(H, Point(850, 391), r);
-	synthesizeFilterH(H, Point(993, 325), r);
-	//H calculation (stop)
-	
-	// filtering (start)
-	Mat imgOut;
-	fftshift(H, H);
-	filter2DFreq(imgIn, imgOut, H);
+    //H calculation (start)
+    Mat H = Mat(roi.size(), CV_32F, Scalar(1));
+    const int r = 21;
+    synthesizeFilterH(H, Point(705, 458), r);
+    synthesizeFilterH(H, Point(850, 391), r);
+    synthesizeFilterH(H, Point(993, 325), r);
+    //H calculation (stop)
+    
+    // filtering (start)
+    Mat imgOut;
+    fftshift(H, H);
+    filter2DFreq(imgIn, imgOut, H);
     // filtering (stop)
 //! [main]
 
-	imgOut.convertTo(imgOut, CV_8U);
+    imgOut.convertTo(imgOut, CV_8U);
     normalize(imgOut, imgOut, 0, 255, NORM_MINMAX);
-	imwrite("result.jpg", imgOut);
-	imwrite("PSD.jpg", imgPSD);
-	fftshift(H, H);
-	normalize(H, H, 0, 255, NORM_MINMAX);
-	imwrite("filter.jpg", H);
-	return 0;
+    imwrite("result.jpg", imgOut);
+    imwrite("PSD.jpg", imgPSD);
+    fftshift(H, H);
+    normalize(H, H, 0, 255, NORM_MINMAX);
+    imwrite("filter.jpg", H);
+    return 0;
 }
 
 //! [fftshift]
@@ -100,30 +100,30 @@ void filter2DFreq(const Mat& inputImg, Mat& outputImg, const Mat& H)
     split(complexIH, planes);
     outputImg = planes[0];
 
-	// filterrring check (start)
-	Mat abs0 = abs(planes[0]);
-	Mat abs1 = abs(planes[1]);
-	double MaxReal, MinReal;
-	minMaxLoc(abs0, &MinReal, &MaxReal, NULL, NULL);
-	double MaxIm, MinIm;
-	minMaxLoc(abs1, &MinIm, &MaxIm, NULL, NULL);
-	cout << "MaxReal = " << MaxReal << "; MinReal = " << MinReal << endl;
-	cout << "MaxIm = " << MaxIm << "; MinIm = " << MinIm << endl;
-	// filterrring check (stop)
+    // filterrring check (start)
+    Mat abs0 = abs(planes[0]);
+    Mat abs1 = abs(planes[1]);
+    double MaxReal, MinReal;
+    minMaxLoc(abs0, &MinReal, &MaxReal, NULL, NULL);
+    double MaxIm, MinIm;
+    minMaxLoc(abs1, &MinIm, &MaxIm, NULL, NULL);
+    cout << "MaxReal = " << MaxReal << "; MinReal = " << MinReal << endl;
+    cout << "MaxIm = " << MaxIm << "; MinIm = " << MinIm << endl;
+    // filterrring check (stop)
 }
 //! [filter2DFreq]
 
 //! [synthesizeFilterH]
 void synthesizeFilterH(Mat& inputOutput_H, Point center, int radius)
 {
-	Point c2 = center, c3 = center, c4 = center;
-	c2.y = inputOutput_H.rows - center.y;
-	c3.x = inputOutput_H.cols - center.x;
-	c4 = Point(c3.x,c2.y);
-	circle(inputOutput_H, center, radius, 0, -1, 8);
-	circle(inputOutput_H, c2, radius, 0, -1, 8);
-	circle(inputOutput_H, c3, radius, 0, -1, 8);
-	circle(inputOutput_H, c4, radius, 0, -1, 8);
+    Point c2 = center, c3 = center, c4 = center;
+    c2.y = inputOutput_H.rows - center.y;
+    c3.x = inputOutput_H.cols - center.x;
+    c4 = Point(c3.x,c2.y);
+    circle(inputOutput_H, center, radius, 0, -1, 8);
+    circle(inputOutput_H, c2, radius, 0, -1, 8);
+    circle(inputOutput_H, c3, radius, 0, -1, 8);
+    circle(inputOutput_H, c4, radius, 0, -1, 8);
 }
 //! [synthesizeFilterH]
 
@@ -133,28 +133,28 @@ void synthesizeFilterH(Mat& inputOutput_H, Point center, int radius)
 //! [calcPSD]
 void calcPSD(const Mat& inputImg, Mat& outputImg, int flag)
 {
-	Mat planes[2] = { Mat_<float>(inputImg.clone()), Mat::zeros(inputImg.size(), CV_32F) };
-	Mat complexI;
-	merge(planes, 2, complexI);
-	dft(complexI, complexI);
-	split(complexI, planes);            // planes[0] = Re(DFT(I)), planes[1] = Im(DFT(I))
+    Mat planes[2] = { Mat_<float>(inputImg.clone()), Mat::zeros(inputImg.size(), CV_32F) };
+    Mat complexI;
+    merge(planes, 2, complexI);
+    dft(complexI, complexI);
+    split(complexI, planes);            // planes[0] = Re(DFT(I)), planes[1] = Im(DFT(I))
 
-	planes[0].at<float>(0) = 0;
-	planes[1].at<float>(0) = 0;
+    planes[0].at<float>(0) = 0;
+    planes[1].at<float>(0) = 0;
 
-	// compute the PSD and switch to logarithmic scale
-	// => log(1 + sqrt(Re(DFT(I))^2 + Im(DFT(I))^2))
-	Mat imgPSD;
-	magnitude(planes[0], planes[1], imgPSD);		//imgPSD = sqrt(Power spectrum density)
-	pow(imgPSD, 2, imgPSD);							//it needs ^2 in order to get PSD
-	outputImg = imgPSD;
+    // compute the PSD and switch to logarithmic scale
+    // => log(1 + sqrt(Re(DFT(I))^2 + Im(DFT(I))^2))
+    Mat imgPSD;
+    magnitude(planes[0], planes[1], imgPSD);		//imgPSD = sqrt(Power spectrum density)
+    pow(imgPSD, 2, imgPSD);							//it needs ^2 in order to get PSD
+    outputImg = imgPSD;
 
-	if (flag)
-	{
-		Mat imglogPSD;
-		imglogPSD = imgPSD + Scalar::all(1);		//switch to logarithmic scale
-		log(imglogPSD, imglogPSD);					//imglogPSD = log(PSD)
-		outputImg = imglogPSD;
-	}
+    if (flag)
+    {
+        Mat imglogPSD;
+        imglogPSD = imgPSD + Scalar::all(1);		//switch to logarithmic scale
+        log(imglogPSD, imglogPSD);					//imglogPSD = log(PSD)
+        outputImg = imglogPSD;
+    }
 }
 //! [calcPSD]
