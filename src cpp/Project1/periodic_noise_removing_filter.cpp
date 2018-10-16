@@ -11,7 +11,6 @@ using namespace std;
 
 void fftshift(const Mat& inputImg, Mat& outputImg);
 void filter2DFreq(const Mat& inputImg, Mat& outputImg, const Mat& H);
-void synthesizeFilterH(Mat& inputOutput_H, Rect roi);
 void synthesizeFilterH(Mat& inputOutput_H, Point center, int radius);
 void calcPSD(const Mat& inputImg, Mat& outputImg, int flag = 0);
 
@@ -44,9 +43,6 @@ int main()
 	synthesizeFilterH(H, Point(705, 458), r);
 	synthesizeFilterH(H, Point(850, 391), r);
 	synthesizeFilterH(H, Point(993, 325), r);
-	Mat imgHPlusPSD = imgPSD + H*50;
-	normalize(imgHPlusPSD, imgHPlusPSD, 0, 255, NORM_MINMAX);
-	imgHPlusPSD.convertTo(imgHPlusPSD, CV_8U);
 	//H calculation (stop)
 	
 	// filtering (start)
@@ -56,19 +52,10 @@ int main()
     // filtering (stop)
 //! [main]
 
-    imgOut.convertTo(imgOut, CV_8U);
+	imgOut.convertTo(imgOut, CV_8U);
     normalize(imgOut, imgOut, 0, 255, NORM_MINMAX);
 	imwrite("result.jpg", imgOut);
-
-	imgIn.convertTo(imgIn, CV_8U);
-	normalize(imgIn, imgIn, 0, 255, NORM_MINMAX);
-	imwrite("input.jpg", imgIn);
-
-	//imgPSD.convertTo(imgPSD, CV_8U);
-	//normalize(imgPSD, imgPSD, 0, 255, NORM_MINMAX);
 	imwrite("PSD.jpg", imgPSD);
-	imwrite("imgHPlusPSD.jpg", imgHPlusPSD);
-
 	fftshift(H, H);
 	normalize(H, H, 0, 255, NORM_MINMAX);
 	imwrite("filter.jpg", H);
@@ -125,22 +112,6 @@ void filter2DFreq(const Mat& inputImg, Mat& outputImg, const Mat& H)
 	// filterrring check (stop)
 }
 //! [filter2DFreq]
-
-//! [synthesizeFilterH]
-void synthesizeFilterH(Mat& inputOutput_H, Rect roi)
-{
-	Rect roiA2 = roi, roiA3 = roi, roiA4 = roi;
-	roiA2.y = inputOutput_H.rows - roi.y - roi.height + 1;
-	roiA3.x = inputOutput_H.cols - roi.x - roi.width + 1;
-	roiA4.x = roiA3.x;
-	roiA4.y = roiA2.y;
-	
-	inputOutput_H(roi) = 0;
-	inputOutput_H(roiA2) = 0;
-	inputOutput_H(roiA3) = 0;
-	inputOutput_H(roiA4) = 0;
-}
-//! [synthesizeFilterH]
 
 //! [synthesizeFilterH]
 void synthesizeFilterH(Mat& inputOutput_H, Point center, int radius)
