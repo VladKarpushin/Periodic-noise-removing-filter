@@ -5,6 +5,7 @@
 #include <iostream>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
 
 using namespace cv;
 using namespace std;
@@ -17,7 +18,7 @@ void calcPSD(const Mat& inputImg, Mat& outputImg, int flag = 0);
 
 int main()
 {
-	Mat imgIn = imread("D:\\home\\programming\\vc\\new\\6_My home projects\\13_Periodic_noise_removing_filter\\input\\input.jpg", IMREAD_GRAYSCALE);
+	Mat imgIn = imread("D:\\home\\programming\\vc\\new\\6_My home projects\\13_Periodic_noise_removing_filter\\input\\input_cut.jpg", IMREAD_GRAYSCALE);
     if (imgIn.empty()) //check whether the image is loaded or not
     {
         cout << "ERROR : Image cannot be loaded..!!" << endl;
@@ -41,9 +42,12 @@ int main()
 	//H calculation (start)
 	Mat H = Mat(roi.size(), CV_32F, Scalar(1));
 	const int r = 21;
-	synthesizeFilterH(H, Point(705, 458), r);
-	synthesizeFilterH(H, Point(850, 391), r);
-	synthesizeFilterH(H, Point(993, 325), r);
+	//synthesizeFilterH(H, Point(705, 458), r);
+	//synthesizeFilterH(H, Point(850, 391), r);
+	//synthesizeFilterH(H, Point(993, 325), r);
+	synthesizeFilterH(H, Point(408, 420), r);
+	synthesizeFilterH(H, Point(491, 360), r);
+	synthesizeFilterH(H, Point(574, 299), r);
 	Mat imgHPlusPSD = imgPSD + H*50;
 	normalize(imgHPlusPSD, imgHPlusPSD, 0, 255, NORM_MINMAX);
 	imgHPlusPSD.convertTo(imgHPlusPSD, CV_8U);
@@ -67,6 +71,9 @@ int main()
 	//imgPSD.convertTo(imgPSD, CV_8U);
 	//normalize(imgPSD, imgPSD, 0, 255, NORM_MINMAX);
 	imwrite("PSD.jpg", imgPSD);
+	imshow("asas", imgPSD);
+	waitKey();
+
 	imwrite("imgHPlusPSD.jpg", imgHPlusPSD);
 
 	fftshift(H, H);
