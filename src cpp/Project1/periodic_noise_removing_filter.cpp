@@ -99,17 +99,6 @@ void filter2DFreq(const Mat& inputImg, Mat& outputImg, const Mat& H)
     idft(complexIH, complexIH);
     split(complexIH, planes);
     outputImg = planes[0];
-
-    // filterrring check (start)
-    Mat abs0 = abs(planes[0]);
-    Mat abs1 = abs(planes[1]);
-    double MaxReal, MinReal;
-    minMaxLoc(abs0, &MinReal, &MaxReal, NULL, NULL);
-    double MaxIm, MinIm;
-    minMaxLoc(abs1, &MinIm, &MaxIm, NULL, NULL);
-    cout << "MaxReal = " << MaxReal << "; MinReal = " << MinReal << endl;
-    cout << "MaxIm = " << MaxIm << "; MinIm = " << MinIm << endl;
-    // filterrring check (stop)
 }
 //! [filter2DFreq]
 
@@ -142,18 +131,18 @@ void calcPSD(const Mat& inputImg, Mat& outputImg, int flag)
     planes[0].at<float>(0) = 0;
     planes[1].at<float>(0) = 0;
 
-    // compute the PSD and switch to logarithmic scale
-    // => log(1 + sqrt(Re(DFT(I))^2 + Im(DFT(I))^2))
+    // compute the PSD = sqrt(Re(DFT(I))^2 + Im(DFT(I))^2)^2
     Mat imgPSD;
     magnitude(planes[0], planes[1], imgPSD);		//imgPSD = sqrt(Power spectrum density)
     pow(imgPSD, 2, imgPSD);							//it needs ^2 in order to get PSD
     outputImg = imgPSD;
 
+	// logPSD = log(1 + PSD)
     if (flag)
     {
         Mat imglogPSD;
-        imglogPSD = imgPSD + Scalar::all(1);		//switch to logarithmic scale
-        log(imglogPSD, imglogPSD);					//imglogPSD = log(PSD)
+        imglogPSD = imgPSD + Scalar::all(1);
+        log(imglogPSD, imglogPSD);
         outputImg = imglogPSD;
     }
 }
